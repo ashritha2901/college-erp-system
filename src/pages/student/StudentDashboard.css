@@ -1,0 +1,95 @@
+.dashboard{
+font-family:Arial;
+background:#f5f6fa;
+min-height:100vh;
+}
+
+.topnav{
+display:flex;
+justify-content:space-between;
+align-items:center;
+background:#4f46e5;
+color:white;
+padding:15px 30px;
+}
+
+.navlinks button{
+margin-left:10px;
+padding:8px 16px;
+border:none;
+background:white;
+color:#4f46e5;
+border-radius:6px;
+cursor:pointer;
+}
+
+.content{
+padding:30px;
+}
+
+.card{
+background:white;
+padding:25px;
+border-radius:10px;
+box-shadow:0 3px 8px rgba(0,0,0,0.1);
+margin-top:20px;
+}
+
+.profilegrid{
+display:grid;
+grid-template-columns:repeat(2,250px);
+gap:10px;
+}
+
+table{
+border-collapse:collapse;
+width:100%;
+margin-top:20px;
+}
+
+th,td{
+border:1px solid #ddd;
+padding:10px;
+text-align:center;
+}
+
+.progressbar{
+background:#ddd;
+height:12px;
+border-radius:10px;
+}
+
+.progressfill{
+background:#22c55e;
+height:12px;
+border-radius:10px;
+}
+
+.timetable td{
+height:45px;
+font-weight:500;
+}
+
+.timetable td:empty{
+background:#f4f4f4;
+}
+.gpa-cards{
+display:flex;
+gap:20px;
+margin:20px 0;
+}
+
+.gpa-card{
+background:#f3f6ff;
+padding:20px;
+border-radius:10px;
+text-align:center;
+width:120px;
+box-shadow:0 2px 6px rgba(0,0,0,0.1);
+}
+
+.cgpa{
+background:#4f46e5;
+color:white;
+font-weight:bold;
+}
