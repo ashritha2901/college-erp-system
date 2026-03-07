@@ -1,83 +1,83 @@
-import React, { useState } from "react";
+import React,{useState} from "react";
 import "./Login.css";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import {useNavigate} from "react-router-dom";
 
 const Login = () => {
-  const navigate = useNavigate();
 
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [role, setRole] = useState("admin");
-  const [error, setError] = useState("");
+const navigate = useNavigate()
 
-  const validateEmail = (mail) => {
-    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(mail);
-  };
+const [email,setEmail] = useState("")
+const [password,setPassword] = useState("")
+const [error,setError] = useState("")
 
-  const validatePassword = (pwd) => {
-    return /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{6,}$/.test(pwd);
-  };
+const handleLogin = async () => {
 
- const handleLogin = async () => {
+try{
 
-  try{
-    const res = await axios.post("http://localhost:5000/login",{
-      email,
-      password
-    });
+const res = await axios.post("http://localhost:5000/login",{
+email,
+password
+})
 
-    // store role
-    localStorage.setItem("role", res.data.role);
+console.log("LOGIN RESPONSE:", res.data)   // 👈 add this
 
-    // store email of logged in user
-    localStorage.setItem("email", res.data.email);
+localStorage.setItem("token", res.data.token);
+localStorage.setItem("role", res.data.role);
+localStorage.setItem("email", res.data.email);
 
-    if(res.data.role === "admin") navigate("/dashboard");
-    if(res.data.role === "student") navigate("/student");
-    if(res.data.role === "faculty") navigate("/faculty");
+const role = res.data.role.toLowerCase()
 
-  }catch(err){
-    setError("Invalid email or password");
-  }
+if(role === "admin") navigate("/dashboard")
+else if(role === "student") navigate("/student")
+else if(role === "faculty") navigate("/faculty")
 
-};
+}catch(err){
 
-  return (
-    <div className="login-container">
-      <div className="login-card">
+setError("Invalid email or password")
 
-        <h2>🎓 College ERP</h2>
+}
 
-        {error && <p className="error">{error}</p>}
+}
 
-        <input
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
+return(
 
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
+<div className="login-container">
 
-        <select onChange={(e) => setRole(e.target.value)}>
-          <option value="admin">Admin</option>
-          <option value="student">Student</option>
-          <option value="faculty">Faculty</option>
-        </select>
+<div className="login-card">
 
-        <button onClick={handleLogin}>Login</button>
-         <p className="forgot" onClick={() => alert("Reset link sent to email!")}>
-  Forgot Password?
+<h2>🎓 College ERP</h2>
+
+{error && <p className="error">{error}</p>}
+
+<input
+placeholder="Email"
+value={email}
+onChange={(e)=>setEmail(e.target.value)}
+/>
+
+<input
+type="password"
+placeholder="Password"
+value={password}
+onChange={(e)=>setPassword(e.target.value)}
+/>
+
+<button onClick={handleLogin}>Login</button>
+
+<p
+className="forgot"
+onClick={()=>alert("Reset link sent to email!")}
+>
+Forgot Password?
 </p>
 
-      </div>
-    </div>
-  );
-};
+</div>
 
-export default Login;
+</div>
+
+)
+
+}
+
+export default Login
