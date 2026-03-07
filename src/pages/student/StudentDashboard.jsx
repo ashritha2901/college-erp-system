@@ -11,7 +11,11 @@ useEffect(()=>{
 
 const email = localStorage.getItem("email")
 
-axios.get(`http://localhost:5000/student/${email}`)
+axios.get(`http://localhost:5000/student/${email}`,{
+headers:{
+Authorization:`Bearer ${localStorage.getItem("token")}`
+}
+})
 .then(res=>{
   console.log("Student data:", res.data)
   setStudent(res.data)
