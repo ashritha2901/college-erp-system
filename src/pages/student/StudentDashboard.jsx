@@ -1,27 +1,67 @@
 import axios from "axios";
+import { io } from "socket.io-client";
 import { useEffect, useState } from "react";
 import "./StudentDashboard.css";
 
+
+const socket = io("http://localhost:5000");
 const StudentDashboard = () => {
 
 const [student,setStudent] = useState(null)
 const [page,setPage] = useState("profile")
-
+const [notifications,setNotifications] = useState([])
+const [showNotif,setShowNotif] = useState(false)
 useEffect(()=>{
 
 const email = localStorage.getItem("email")
 
+const token = localStorage.getItem("token")
+
 axios.get(`http://localhost:5000/student/${email}`,{
 headers:{
-Authorization:`Bearer ${localStorage.getItem("token")}`
+Authorization:`Bearer ${token}`
 }
 })
 .then(res=>{
-  console.log("Student data:", res.data)
-  setStudent(res.data)
+setStudent(res.data)
+})
+
+/* GET OLD NOTIFICATIONS */
+
+axios.get(`http://localhost:5000/notifications/${email}`,{
+headers:{
+Authorization:`Bearer ${token}`
+}
+})
+.then(res=>{
+  console.log("NOTIFICATIONS:", res.data)
+setNotifications(
+  res.data.map(n => ({
+    message: n.message
+  }))
+)
+})
+
+/* REALTIME NOTIFICATIONS */
+
+socket.on("notification",(data)=>{
+
+if(data.email === email){
+
+setNotifications(prev => [
+{message:data.message},
+...prev
+])
+
+}
+
 })
 
 },[])
+
+
+
+
 
 
 // GPA CALCULATION
@@ -96,17 +136,38 @@ return(
 
 <h2>🎓 College ERP</h2>
 
-<div className="navlinks">
+<div className="nav-right">
 
+<div className="notif-bell" onClick={()=>setShowNotif(!showNotif)}>
+🔔 {notifications.length}
+</div>
+
+{showNotif && (
+
+<div className="notif-panel">
+
+{notifications.length === 0 && <p>No notifications</p>}
+
+{notifications.map((n,i)=>(
+<div key={i} className="notif-item">
+{n.message}
+</div>
+))}
+
+</div>
+
+)}
+
+</div>
+
+<div className="navlinks">
 <button onClick={()=>setPage("profile")}>Profile</button>
 <button onClick={()=>setPage("attendance")}>Attendance</button>
 <button onClick={()=>setPage("marks")}>Marks</button>
 <button onClick={()=>setPage("timetable")}>Timetable</button>
-
 </div>
 
 </div>
-
 
 <div className="content">
 

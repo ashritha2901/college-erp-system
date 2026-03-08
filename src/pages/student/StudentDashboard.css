@@ -93,3 +93,32 @@ background:#4f46e5;
 color:white;
 font-weight:bold;
 }
+
+.nav-right{
+position:relative;
+}
+
+.notif-bell{
+cursor:pointer;
+font-size:18px;
+margin-left:20px;
+}
+
+.notif-panel{
+position:absolute;
+top:40px;
+right:0;
+width:260px;
+background:white;
+color:black;
+border-radius:8px;
+box-shadow:0 5px 15px rgba(0,0,0,0.2);
+padding:10px;
+z-index:1000;
+}
+
+.notif-item{
+padding:8px;
+border-bottom:1px solid #eee;
+font-size:14px;
+}
