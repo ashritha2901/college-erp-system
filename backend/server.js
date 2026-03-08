@@ -5,15 +5,16 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 
 const authRoutes = require("./routes/authRoutes");
-const studentRoutes = require("./routes/studentRoutes");
 const facultyRoutes = require("./routes/facultyRoutes");
-const notificationRoutes = require("./routes/notificationRoutes");
+const studentRoutes = require("./routes/studentRoutes");
+
+const redisClient = require("./config/redis");
 
 const app = express();
 const server = http.createServer(app);
 
 const io = new Server(server,{
-cors:{origin:"*"}
+  cors:{origin:"*"}
 });
 
 app.set("io", io);
@@ -25,13 +26,13 @@ mongoose.connect("mongodb://localhost:27017/collegeERP")
 .then(()=>console.log("MongoDB Connected"));
 
 app.use("/auth", authRoutes);
-app.use("/student", studentRoutes);
 app.use("/faculty", facultyRoutes);
-app.use("/notifications", notificationRoutes);
+app.use("/student", studentRoutes);
+
 io.on("connection",(socket)=>{
-console.log("User connected:",socket.id);
+  console.log("User connected:",socket.id);
 });
 
 server.listen(5000,()=>{
-console.log("Server running on port 5000");
+  console.log("Server running on port 5000");
 });

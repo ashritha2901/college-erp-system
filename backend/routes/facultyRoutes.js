@@ -4,7 +4,7 @@ const router = express.Router();
 const Student = require("../models/Student");
 const User = require("../models/User");
 const Notification = require("../models/Notification");
-
+const redisClient = require("../config/redis");
 /* GET FACULTY PROFILE */
 
 router.get("/:email", async (req, res) => {
@@ -99,8 +99,10 @@ router.put("/update-marks", async (req, res) => {
 
     await student.save();
 
-    /* CREATE NOTIFICATION */
+    // DELETE CACHE
+    await redisClient.del(email);
 
+    // CREATE NOTIFICATION
     const notification = new Notification({
       email: email,
       message: `Marks updated for ${subject}`
@@ -108,8 +110,7 @@ router.put("/update-marks", async (req, res) => {
 
     await notification.save();
 
-    /* SOCKET EVENT */
-
+    // SOCKET EVENT
     const io = req.app.get("io");
 
     io.emit("notification", {
@@ -117,6 +118,7 @@ router.put("/update-marks", async (req, res) => {
       message: `Marks updated for ${subject}`
     });
 
+    // SINGLE RESPONSE
     res.json({ message: "Marks updated successfully" });
 
   } catch (err) {
