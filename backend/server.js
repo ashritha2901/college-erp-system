@@ -16,7 +16,9 @@ const server = http.createServer(app);
 const io = new Server(server,{
   cors:{origin:"*"}
 });
+const notificationRoutes = require("./routes/notificationRoutes");
 
+app.use("/notifications", notificationRoutes);
 app.set("io", io);
 
 app.use(cors());

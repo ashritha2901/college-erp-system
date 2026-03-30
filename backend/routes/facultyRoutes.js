@@ -3,13 +3,18 @@ const router = express.Router();
 
 const Student = require("../models/Student");
 const User = require("../models/User");
-const Notification = require("../models/Notification");
 const redisClient = require("../config/redis");
-/* GET FACULTY PROFILE */
+
+// ✅ IMPORT PRODUCER
+const sendMessage = require("../messageQueue/producer");
+
+
+/* ===========================
+   GET FACULTY PROFILE
+=========================== */
 
 router.get("/:email", async (req, res) => {
   try {
-
     const faculty = await User.findOne({ email: req.params.email });
 
     if (!faculty) {
@@ -25,24 +30,20 @@ router.get("/:email", async (req, res) => {
 });
 
 
-/* GET STUDENTS UNDER FACULTY */
+/* ===========================
+   GET STUDENTS UNDER FACULTY
+=========================== */
 
 router.get("/students/:email", async (req, res) => {
-
   try {
-
     const facultyEmail = req.params.email;
 
     const students = await Student.find();
-
     let result = [];
 
     students.forEach(student => {
-
       if (student.marks) {
-
         student.marks.forEach(m => {
-
           if (m.faculty === facultyEmail) {
 
             let att = student.attendance.find(
@@ -59,11 +60,8 @@ router.get("/students/:email", async (req, res) => {
             });
 
           }
-
         });
-
       }
-
     });
 
     res.json(result);
@@ -72,14 +70,14 @@ router.get("/students/:email", async (req, res) => {
     console.log(err);
     res.status(500).json({ message: "Server error" });
   }
-
 });
 
 
-/* UPDATE MARKS */
+/* ===========================
+   UPDATE MARKS (MQ INTEGRATION)
+=========================== */
 
 router.put("/update-marks", async (req, res) => {
-
   try {
 
     const { email, subject, marks } = req.body;
@@ -90,6 +88,7 @@ router.put("/update-marks", async (req, res) => {
       return res.status(404).json({ message: "Student not found" });
     }
 
+    // UPDATE MARKS
     student.marks = student.marks.map(m => {
       if (m.subject === subject) {
         return { ...m, score: Number(marks) };
@@ -102,15 +101,19 @@ router.put("/update-marks", async (req, res) => {
     // DELETE CACHE
     await redisClient.del(email);
 
-    // CREATE NOTIFICATION
-    const notification = new Notification({
-      email: email,
-      message: `Marks updated for ${subject}`
+    // ✅ SEND MESSAGE TO RABBITMQ (INSTEAD OF DIRECT DB SAVE)
+    await sendMessage("studentQueue", {
+      type: "MARKS_UPDATED",
+      data: {
+        email: email,
+        subject: subject,
+        marks: marks
+      }
     });
 
-    await notification.save();
+    console.log("Marks update event sent to RabbitMQ");
 
-    // SOCKET EVENT
+    // SOCKET EVENT (optional, keep it)
     const io = req.app.get("io");
 
     io.emit("notification", {
@@ -118,16 +121,13 @@ router.put("/update-marks", async (req, res) => {
       message: `Marks updated for ${subject}`
     });
 
-    // SINGLE RESPONSE
     res.json({ message: "Marks updated successfully" });
 
   } catch (err) {
-
     console.log(err);
     res.status(500).json({ message: "Update failed" });
-
   }
-
 });
+
 
 module.exports = router;
