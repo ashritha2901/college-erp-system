@@ -3,36 +3,73 @@ const router = express.Router();
 
 const Student = require("../models/Student");
 const auth = require("../middleware/auth");
-const redisClient = require("../config/redis")
-router.get("/:email", async(req,res)=>{
+const redisClient = require("../config/redis");
 
-const email = req.params.email
+// ✅ IMPORT MESSAGE QUEUE PRODUCER
+const sendMessage = require("../messageQueue/producer");
 
-/* CHECK CACHE FIRST */
 
-const cachedStudent = await redisClient.get(email)
+/* ===========================
+   GET STUDENT BY EMAIL (CACHE)
+=========================== */
 
-if(cachedStudent){
-console.log("Serving from Redis cache")
-return res.json(JSON.parse(cachedStudent))
-}
+router.get("/:email", async (req, res) => {
+    try {
+        const email = req.params.email;
 
-/* FETCH FROM DATABASE */
+        /* CHECK CACHE FIRST */
+        const cachedStudent = await redisClient.get(email);
 
-const student = await Student.findOne({email})
+        if (cachedStudent) {
+            console.log("Serving from Redis cache");
+            return res.json(JSON.parse(cachedStudent));
+        }
 
-if(!student){
-return res.status(404).json({message:"Student not found"})
-}
+        /* FETCH FROM DATABASE */
+        const student = await Student.findOne({ email });
 
-/* SAVE IN CACHE */
+        if (!student) {
+            return res.status(404).json({ message: "Student not found" });
+        }
 
-await redisClient.setEx(email,60,JSON.stringify(student))
+        /* SAVE IN CACHE */
+        await redisClient.setEx(email, 60, JSON.stringify(student));
 
-console.log("Serving from MongoDB")
+        console.log("Serving from MongoDB");
 
-res.json(student)
+        res.json(student);
 
-})
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+
+/* ===========================
+   REGISTER STUDENT (MQ ADDED)
+=========================== */
+
+router.post("/register", async (req, res) => {
+    try {
+        const studentData = req.body;
+
+        // SAVE TO DATABASE
+        const newStudent = await Student.create(studentData);
+
+        // ✅ SEND MESSAGE TO QUEUE
+        await sendMessage("studentQueue", {
+            type: "NEW_STUDENT",
+            data: newStudent
+        });
+
+        console.log("Message sent to RabbitMQ");
+
+        res.status(201).json(newStudent);
+
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
 
 module.exports = router;

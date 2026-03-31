@@ -1,12 +1,9 @@
 const mongoose = require("mongoose");
 
-const NotificationSchema = new mongoose.Schema({
-  email: String,
-  message: String,
-  createdAt: {
-    type: Date,
-    default: Date.now
-  }
+const notificationSchema = new mongoose.Schema({
+    type: String,
+    message: String,
+    createdAt: Date
 });
 
-module.exports = mongoose.model("Notification", NotificationSchema);
+module.exports = mongoose.model("Notification", notificationSchema);
