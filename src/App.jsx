@@ -6,6 +6,7 @@ import StudentDashboard from "./pages/student/StudentDashboard";
 import Attendance from "./pages/student/Attendance";
 import ForgotPassword from "./pages/ForgotPassword";
 import FacultyDashboard from "./pages/faculty/FacultyDashboard";
+import RegisterCourse from "./pages/RegisterCourse";
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
       <Route path="/attendance" element={<Attendance />} />
       <Route path="/forgot" element={<ForgotPassword />} />
       <Route path="/faculty" element={<FacultyDashboard />} />
+      <Route path="/register-course" element={<RegisterCourse />} />
     </Routes>
   );
 }
